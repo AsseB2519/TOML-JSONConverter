@@ -1,5 +1,10 @@
 # Processamento de Linguagens
 
+### Grupo de Trabalho:
+  - Afonso Bessa  	
+  - Martim Ribeiro
+  - João Barroso
+
 ## Conversor Toml-Json
 
 Este projeto tem como objetivo a construção de uma ferramenta capaz de converter um subconjunto da linguagem Toml para o formato Json.
