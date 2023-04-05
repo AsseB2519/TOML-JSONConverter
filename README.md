@@ -1,9 +1,10 @@
 # Processamento de Linguagens
 
 ### Grupo de Trabalho:
-  - Afonso Bessa  	
-  - Martim Ribeiro
-  - João Barroso
+- [Afonso Bessa](https://github.com/afonsobessa)
+- [Martim Ribeiro](https://github.com/sldx12)
+- [João Barroso](https://github.com/JoaoBarroso25)
+
 
 ## Conversor Toml-Json
 
