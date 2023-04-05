@@ -7,15 +7,9 @@
 
 ## Conversor Toml-Json
 
-Este projeto tem como objetivo a construção de uma ferramenta capaz de converter um subconjunto da linguagem Toml para o formato Json.
+O objetivo deste projeto é construir uma ferramenta capaz de converter um subconjunto da linguagem Toml para o formato Json. A linguagem Toml é frequentemente usada em arquivos de configuração e em vários outros domínios, permitindo a fácil definição de estruturas complexas de modo análogo ao JSON e ao YAML. Enquanto isso, o formato Json é amplamente utilizado em aplicações web e serviços REST.
 
-A linguagem Toml permite uma fácil definição de estruturas complexas, frequentemente usadas em arquivos de configuração e em vários outros domínios de modo análogo ao JSON e ao YAML.
-
-O formato Toml é muito utilizado em configurações de aplicações e sistemas, enquanto o formato Json é utilizado em aplicações web e serviços REST.
-
-O subconjunto da linguagem Toml que será convertido para Json será definido durante o desenvolvimento da ferramenta.
-
-Bibliotecas Utilizadas:
+Durante o desenvolvimento da ferramenta, será definido um subconjunto da linguagem Toml que será convertido para Json. Para realizar essa tarefa, serão utilizadas as seguintes bibliotecas:
 
   - Flex
 
