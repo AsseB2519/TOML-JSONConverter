@@ -1,7 +1,7 @@
 # Processamento de Linguagens
 
 ### Grupo de Trabalho:
-- [Afonso Bessa](https://github.com/afonsobessa)
+- [Afonso Bessa](https://github.com/AsseB2519)
 - [Martim Ribeiro](https://github.com/sldx12)
 - [João Barroso](https://github.com/JoaoBarroso25)
 
