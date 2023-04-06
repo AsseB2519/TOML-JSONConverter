@@ -52,12 +52,14 @@ t_BOOL = r'(?i)\b(?:true|false)\b'
 t_NEWLINE = r'\n'
 
 def t_REAL(t):
-    r'-?\d+\.\d+'
+    #r'-?\d+\.\d+'
+    r'(?<![\'"])-?\d+\.\d+(?![\'"])'
     t.value = float(t.value)
     return t
 
 def t_INT(t):
-    r'-?\d+(?!\d|T|-|:)'
+    #r'-?\d+(?!\d|T|-|:)'
+    r'(?<![\'"])-?\d+(?![\'"]|\d|T|-|:)'
     t.value = int(t.value)
     return t
 
@@ -80,6 +82,7 @@ dob = 1979-05-27T07:32:00-08:00
 
 [database]
 enabled = true
+ports = [ 8000, 8001, 8002 ]
 """
 
 lexer.input(inp2)
@@ -129,7 +132,14 @@ def p_keyvalue(p):
     '''
     keyvalue : KEY EQUALS value NEWLINE
     '''
-    p[0] = (p[1], p[3])
+    if isinstance(p[3], list):
+        value = dict(value=p[3])
+        if len(value) == 1 and 'value' in value:
+            p[0] = (p[1], value['value'])
+        else:
+            p[0] = (p[1], value)
+    else:
+        p[0] = (p[1], p[3])
 
 def p_table(p):
     '''
@@ -144,8 +154,25 @@ def p_value(p):
           | STRING
           | BOOL
           | FIRSTCLASSDATE
+          | list
     '''
     p[0] = p[1]
+
+def p_list(p):
+    '''
+    list : OBRACKET values CBRACKET
+    '''
+    p[0] = p[2]
+
+def p_values(p):
+    '''
+    values : value
+           | values COMMA value
+    '''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 def p_error(p):
     print(f"Syntax error at line {p.lineno}, column {p.lexpos}")
