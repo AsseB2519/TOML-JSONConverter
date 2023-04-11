@@ -11,6 +11,7 @@ tokens = (
     'OBRACE',
     'CBRACE',
     'KEY',
+    'INLINETABLE',
     'TABLENAME',
     'SUBTABLENAME',
     'STRING',
@@ -41,15 +42,23 @@ t_CBRACE = r'}'
 
 t_KEY = r'\S+(?=\s=)'
 
+t_INLINETABLE = r'\{[^{}]*\}'
+
 t_TABLENAME = r'(?<=\[)[^\[\]""]+(?=\])'
 
 t_SUBTABLENAME = r'\[[^\[\]""]+\.[^\[\]""]+\]'
 
-t_STRING = r'(?<=")[^"\n]*(?=")'
+#t_STRING = r'(?<=")[^"\n]*(?=")'
+#t_STRING = r'"(?:[^"\n]|\\.)*"'
 
 t_BOOL = r'(?i)\b(?:true|false)\b'
 
 t_NEWLINE = r'\n'
+
+def t_STRING(t):
+    r'"(?:[^"\n]|\\.)*"'
+    t.value = t.value[1:-1]
+    return t
 
 def t_REAL(t):
     #r'-?\d+\.\d+'
@@ -63,7 +72,8 @@ def t_INT(t):
     t.value = int(t.value)
     return t
 
-t_ignore = " \""
+#t_ignore = " \""
+t_ignore = " "
 
 def t_error(t):
     print(f"Illegal character {t.value[0]}")
@@ -83,6 +93,7 @@ dob = 1979-05-27T07:32:00-08:00
 [database]
 enabled = true
 ports = [ 8000, 8001, 8002 ]
+temp_targets = { cpu = 79.5, case = 72.0 }
 """
 
 lexer.input(inp2)
@@ -92,8 +103,10 @@ while tok := lexer.token():
 
 def p_toml(p):
     '''
-    toml : toml keyvalue_list
+    toml : toml inline_table
+         | toml keyvalue_list
          | toml table
+         | inline_table
          | keyvalue_list
          | table
     '''
@@ -109,10 +122,19 @@ def p_toml(p):
         elif isinstance(p[1], list):
             p[0] = dict(p[1])
 
+def p_inline_table(p):
+    '''
+    inline_table : KEY EQUALS INLINETABLE NEWLINE
+                 | NEWLINE
+    '''
+    if len(p) == 5:
+        p[0] = [(p[1], p[3])]
+    else:
+        p[0] = []
+
 def p_keyvalue_list(p):
     '''
     keyvalue_list : keyvalue_list keyvalue
-                  | keyvalue_list NEWLINE
                   | keyvalue
                   | NEWLINE
     '''
@@ -130,7 +152,7 @@ def p_keyvalue_list(p):
 
 def p_keyvalue(p):
     '''
-    keyvalue : KEY EQUALS value NEWLINE
+    keyvalue : KEY EQUALS value
     '''
     if isinstance(p[3], list):
         value = dict(value=p[3])
@@ -160,7 +182,7 @@ def p_value(p):
 
 def p_list(p):
     '''
-    list : OBRACKET values CBRACKET
+    list : OBRACKET nested_values CBRACKET
     '''
     p[0] = p[2]
 
@@ -174,6 +196,18 @@ def p_values(p):
     else:
         p[0] = p[1] + [p[3]]
 
+def p_nested_values(p):
+    '''
+    nested_values : nested_values COMMA value
+                  | nested_values COMMA list
+                  | value
+                  | list
+    '''
+    if len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = [p[1]]
+
 def p_error(p):
     print(f"Syntax error at line {p.lineno}, column {p.lexpos}")
 
@@ -182,4 +216,3 @@ parsed_dict = parser.parse(inp2, lexer=lexer, debug=True)
 json_str = json.dumps(parsed_dict)
 
 print(json_str)
-
