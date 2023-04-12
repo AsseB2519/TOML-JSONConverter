@@ -40,7 +40,8 @@ t_OBRACE = r'{'
 
 t_CBRACE = r'}'
 
-t_KEY = r'\S+(?=\s=)'
+# t_KEY = r'\S+(?=\s=)'
+t_KEY = r'[A-Za-z\d_-]+(?=\s=)'
 
 t_INLINETABLE = r'\{[^{}]*\}'
 
@@ -56,7 +57,7 @@ t_BOOL = r'(?i)\b(?:true|false)\b'
 t_NEWLINE = r'\n'
 
 def t_STRING(t):
-    r'"(?:[^"\n]|\\.)*"'
+    r'(\"([^\n\\\"]|\\.|\\\n)*\")|(\'([^\n\\\']|\\.|\\\n)*\')'
     t.value = t.value[1:-1]
     return t
 
@@ -67,13 +68,30 @@ def t_REAL(t):
     return t
 
 def t_INT(t):
-    #r'-?\d+(?!\d|T|-|:)'
-    r'(?<![\'"])-?\d+(?![\'"]|\d|T|-|:)'
+    r'(?<![\'"])((?<!\d)-)?\d+(?![\'"]|\d|T|-|:|(?<=\d)\s=)'
     t.value = int(t.value)
     return t
 
-#t_ignore = " \""
+# def t_STRING(t):
+#     r'"(?:[^"\n]|\\.)*"'
+#     t.value = t.value[1:-1]
+#     return t
+#
+# def t_REAL(t):
+#     #r'-?\d+\.\d+'
+#     r'(?<![\'"])-?\d+\.\d+(?![\'"])'
+#     t.value = float(t.value)
+#     return t
+#
+# def t_INT(t):
+#     r'(?<![\'"])-?\d+(?![\'"]|\d|T|-|:|(?<=\d)\s=)'
+#     t.value = int(t.value)
+#     return t
+
+
+# t_ignore = " \""
 t_ignore = " "
+# t_ignore_COMMENT = r'\#[^\n]*'
 
 def t_error(t):
     print(f"Illegal character {t.value[0]}")
@@ -82,18 +100,7 @@ def t_error(t):
 lexer = lex.lex()
 
 inp2 = """
-# This is a TOML document
 
-title = "TOML Example"
-
-[owner]
-name = "Tom Preston-Werner"
-dob = 1979-05-27T07:32:00-08:00
-
-[database]
-enabled = true
-ports = [ 8000, 8001, 8002 ]
-temp_targets = { cpu = 79.5, case = 72.0 }
 """
 
 lexer.input(inp2)
@@ -135,6 +142,7 @@ def p_inline_table(p):
 def p_keyvalue_list(p):
     '''
     keyvalue_list : keyvalue_list keyvalue
+                  | keyvalue_list NEWLINE
                   | keyvalue
                   | NEWLINE
     '''
@@ -165,9 +173,14 @@ def p_keyvalue(p):
 
 def p_table(p):
     '''
-    table : OBRACKET TABLENAME CBRACKET NEWLINE keyvalue_list
+    table : OBRACKET TABLENAME CBRACKET NEWLINE
+          | OBRACKET TABLENAME CBRACKET NEWLINE keyvalue_list
     '''
-    p[0] = [(p[2], dict(p[5]))]
+    if len(p) == 5:
+        p[0] = [(p[2], {})]
+    else:
+        p[0] = [(p[2], dict(p[5]))]
+
 
 def p_value(p):
     '''
@@ -178,7 +191,12 @@ def p_value(p):
           | FIRSTCLASSDATE
           | list
     '''
-    p[0] = p[1]
+    if isinstance(p[1], str) and p[1].lower() == 'true':
+        p[0] = True
+    elif isinstance(p[1], str) and p[1].lower() == 'false':
+        p[0] = False
+    else:
+        p[0] = p[1]
 
 def p_list(p):
     '''
@@ -212,7 +230,13 @@ def p_error(p):
     print(f"Syntax error at line {p.lineno}, column {p.lexpos}")
 
 parser = yacc.yacc()
-parsed_dict = parser.parse(inp2, lexer=lexer, debug=True)
+parsed_dict = parser.parse(inp2, lexer=lexer) #, debug=True)
 json_str = json.dumps(parsed_dict)
-
 print(json_str)
+
+# try:
+#     parsed_dict = parser.parse(inp2, lexer=lexer)
+#     json_str = json.dumps(parsed_dict)
+# except ValueError as e:
+#     print(f"Error: {e}")
+#     json_str = "{}"
