@@ -17,6 +17,8 @@ tokens = (
     'STRING',
     'BOOL',
     'FIRSTCLASSDATE',
+    'DATE',
+    'TIME',
     'INT',
     'REAL',
     'NEWLINE'
@@ -27,6 +29,10 @@ def t_COMMENT(t):
     pass
 
 t_FIRSTCLASSDATE = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2}'
+
+t_DATE = r'\d{4}-\d{2}-\d{2}'
+
+t_TIME = r'\d{2}:\d{2}:\d{2}'
 
 t_EQUALS = r'\='
 
@@ -84,9 +90,10 @@ def t_error(t):
 lexer = lex.lex()
 
 inp2 = """
-name = "Orange"
-physical.color = "orange"
-physical.shape = "round"
+[servers]
+[servers.alpha]
+ip = "10.0.0.1"
+dc = "eqdc10"
 """
 
 lexer.input(inp2)
@@ -202,6 +209,8 @@ def p_value(p):
           | STRING
           | BOOL
           | FIRSTCLASSDATE
+          | DATE
+          | TIME
           | list
     '''
     if isinstance(p[1], str) and p[1].lower() == 'true':
