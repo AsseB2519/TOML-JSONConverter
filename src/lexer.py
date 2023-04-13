@@ -54,7 +54,8 @@ t_INLINETABLE = r'\{[^{}]*\}'
 
 t_TABLENAME = r'(?<=\[)[^\[\]""]+(?=\])'
 
-t_SUBTABLENAME = r'\[[^\[\]""]+\.[^\[\]""]+\]'
+#t_SUBTABLENAME = r'\[[^\[\]""]+\.[^\[\]""]+\]'
+t_SUBTABLENAME = r'(?<=\[)[^\[\]"]+\.[^\[\]"]+(?=\])'
 
 #t_STRING = r'(?<=")[^"\n]*(?=")'
 #t_STRING = r'"(?:[^"\n]|\\.)*"'
@@ -93,7 +94,10 @@ inp2 = """
 [servers]
 [servers.alpha]
 ip = "10.0.0.1"
-dc = "eqdc10"
+role = "frontend"
+[servers.beta]
+ip = "10.0.0.2"
+role = "backend"
 """
 
 lexer.input(inp2)
@@ -107,12 +111,12 @@ def merge_dicts(d1, d2):
             merge_dicts(d1[key], value)
         else:
             if isinstance(value, dict) and len(value) == 1:
-                print(d1)
-                print(key)
-                print(value)
+                #print(d2)
+                #print(key)
+                # print(value)
                 k, v = next(iter(value.items()))
-                print(k)
-                print(v)
+                #print(k)
+                #print(v)
                 #if key not in d1:
                 #    print("cheguei")
                 #    d1[key] = {}
@@ -125,16 +129,20 @@ def p_toml(p):
     toml : toml inline_table
          | toml keyvalue_list
          | toml table
+         | toml subtable
          | inline_table
          | keyvalue_list
          | table
+         | subtable
     '''
     if len(p) == 3:
         if isinstance(p[1], dict) and isinstance(p[2], tuple):
             merge_dicts(p[1], {p[2][0]: p[2][1]})
-        elif isinstance(p[1], dict) and isinstance(p[2], list):
+        elif isinstance(p[1], dict) and isinstance(p[2], list) and len(p[2]) == 2:
             for item in p[2]:
                 merge_dicts(p[1], {item[0]: item[1]})
+        else:
+            p[1] = {p[2][0][0]: p[2][0][1]}
         p[0] = p[1]
     else:
         if isinstance(p[1], tuple):
@@ -191,16 +199,27 @@ def p_keyvalue(p):
         else:
             p[0] = (p[1], p[3])
 
+def p_subtable(p):
+    '''
+    subtable : OBRACKET SUBTABLENAME CBRACKET NEWLINE
+             | OBRACKET SUBTABLENAME CBRACKET NEWLINE keyvalue_list
+    '''
+    names = p[2].split(".")
+    if len(p) == 5:
+        p[0] = [names[1], {}]
+    else:
+        p[0] = [(names[1], dict(p[5]))]
+
 def p_table(p):
     '''
     table : OBRACKET TABLENAME CBRACKET NEWLINE
           | OBRACKET TABLENAME CBRACKET NEWLINE keyvalue_list
+          | OBRACKET TABLENAME CBRACKET NEWLINE subtable
     '''
     if len(p) == 5:
         p[0] = [(p[2], {})]
     else:
         p[0] = [(p[2], dict(p[5]))]
-
 
 def p_value(p):
     '''
