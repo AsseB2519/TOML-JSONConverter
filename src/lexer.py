@@ -40,7 +40,9 @@ t_OBRACE = r'{'
 
 t_CBRACE = r'}'
 
-t_KEY = r'\S+(?=\s=)'
+# t_KEY = r'\S+(?=\s=)'
+#t_KEY = r'[A-Za-z\d_-]+(?=\s=)'
+t_KEY = r'[A-Za-z\d_-]+(\.[A-Za-z\d_-]+)*(?=\s=)'
 
 t_INLINETABLE = r'\{[^{}]*\}'
 
@@ -56,7 +58,7 @@ t_BOOL = r'(?i)\b(?:true|false)\b'
 t_NEWLINE = r'\n'
 
 def t_STRING(t):
-    r'"(?:[^"\n]|\\.)*"'
+    r'(\"([^\n\\\"]|\\.|\\\n)*\")|(\'([^\n\\\']|\\.|\\\n)*\')'
     t.value = t.value[1:-1]
     return t
 
@@ -67,12 +69,13 @@ def t_REAL(t):
     return t
 
 def t_INT(t):
-    r'(?<![\'"])-?\d+(?![\'"]|\d|T|-|:|(?<=\d)\s=)'
+    r'(?<![\'"])((?<!\d)-)?\d+(?![\'"]|\d|T|-|:|(?<=\d)\s=)'
     t.value = int(t.value)
     return t
 
-#t_ignore = " \""
+# t_ignore = " \""
 t_ignore = " "
+# t_ignore_COMMENT = r'\#[^\n]*'
 
 def t_error(t):
     print(f"Illegal character {t.value[0]}")
@@ -81,23 +84,34 @@ def t_error(t):
 lexer = lex.lex()
 
 inp2 = """
-# This is a TOML document
-
-title = "TOML Example"
-
-[owner]
-name = "Tom Preston-Werner"
-dob = 1979-05-27T07:32:00-08:00
-
-[database]
-enabled = true
-ports = [ 8000, 8001, 8002 ]
+name = "Orange"
+physical.color = "orange"
+physical.shape = "round"
 """
 
 lexer.input(inp2)
 
 while tok := lexer.token():
   print(tok)
+
+def merge_dicts(d1, d2):
+    for key, value in d2.items():
+        if key in d1 and isinstance(d1[key], dict) and isinstance(value, dict):
+            merge_dicts(d1[key], value)
+        else:
+            if isinstance(value, dict) and len(value) == 1:
+                print(d1)
+                print(key)
+                print(value)
+                k, v = next(iter(value.items()))
+                print(k)
+                print(v)
+                #if key not in d1:
+                #    print("cheguei")
+                #    d1[key] = {}
+                d1[k] = v
+            else:
+                d1[key] = value
 
 def p_toml(p):
     '''
@@ -110,9 +124,10 @@ def p_toml(p):
     '''
     if len(p) == 3:
         if isinstance(p[1], dict) and isinstance(p[2], tuple):
-            p[1].update([p[2]])
+            merge_dicts(p[1], {p[2][0]: p[2][1]})
         elif isinstance(p[1], dict) and isinstance(p[2], list):
-            p[1].update(p[2])
+            for item in p[2]:
+                merge_dicts(p[1], {item[0]: item[1]})
         p[0] = p[1]
     else:
         if isinstance(p[1], tuple):
@@ -153,20 +168,32 @@ def p_keyvalue(p):
     '''
     keyvalue : KEY EQUALS value
     '''
-    if isinstance(p[3], list):
-        value = dict(value=p[3])
-        if len(value) == 1 and 'value' in value:
-            p[0] = (p[1], value['value'])
-        else:
-            p[0] = (p[1], value)
+    key_parts = p[1].split('.')
+    if len(key_parts) > 1:
+        nested_dict = {key_parts[-1]: p[3]}
+        for part in reversed(key_parts[:-1]):
+            nested_dict = {part: nested_dict}
+        p[0] = (key_parts[0], nested_dict)
     else:
-        p[0] = (p[1], p[3])
+        if isinstance(p[3], list):
+            value = dict(value=p[3])
+            if len(value) == 1 and 'value' in value:
+                p[0] = (p[1], value['value'])
+            else:
+                p[0] = (p[1], value)
+        else:
+            p[0] = (p[1], p[3])
 
 def p_table(p):
     '''
-    table : OBRACKET TABLENAME CBRACKET NEWLINE keyvalue_list
+    table : OBRACKET TABLENAME CBRACKET NEWLINE
+          | OBRACKET TABLENAME CBRACKET NEWLINE keyvalue_list
     '''
-    p[0] = [(p[2], dict(p[5]))]
+    if len(p) == 5:
+        p[0] = [(p[2], {})]
+    else:
+        p[0] = [(p[2], dict(p[5]))]
+
 
 def p_value(p):
     '''
@@ -177,7 +204,12 @@ def p_value(p):
           | FIRSTCLASSDATE
           | list
     '''
-    p[0] = p[1]
+    if isinstance(p[1], str) and p[1].lower() == 'true':
+        p[0] = True
+    elif isinstance(p[1], str) and p[1].lower() == 'false':
+        p[0] = False
+    else:
+        p[0] = p[1]
 
 def p_list(p):
     '''
@@ -211,7 +243,13 @@ def p_error(p):
     print(f"Syntax error at line {p.lineno}, column {p.lexpos}")
 
 parser = yacc.yacc()
-parsed_dict = parser.parse(inp2, lexer=lexer, debug=True)
+parsed_dict = parser.parse(inp2, lexer=lexer) #, debug=True)
 json_str = json.dumps(parsed_dict)
-
 print(json_str)
+
+# try:
+#     parsed_dict = parser.parse(inp2, lexer=lexer)
+#     json_str = json.dumps(parsed_dict)
+# except ValueError as e:
+#     print(f"Error: {e}")
+#     json_str = "{}"
