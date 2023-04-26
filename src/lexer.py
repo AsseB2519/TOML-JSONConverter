@@ -90,14 +90,18 @@ def t_error(t):
 
 lexer = lex.lex()
 
+
 inp2 = """
-[servers]
-[servers.alpha]
-ip = "10.0.0.1"
-role = "frontend"
-[servers.beta]
-ip = "10.0.0.2"
-role = "backend"
+title = "TOML Example"
+
+[owner]
+name = "Tom Preston-Werner"
+dob = 1979-05-27T07:32:00-08:00
+
+[database]
+enabled = true
+ports = [ 8000, 8001, 8002 ]
+data = [ ["delta", "phi"], [3.14] ]
 """
 
 lexer.input(inp2)
@@ -137,17 +141,25 @@ def p_toml(p):
     '''
     if len(p) == 3:
         if isinstance(p[1], dict) and isinstance(p[2], tuple):
+            print("1")
             merge_dicts(p[1], {p[2][0]: p[2][1]})
         elif isinstance(p[1], dict) and isinstance(p[2], list) and len(p[2]) == 2:
+            print("2")
             for item in p[2]:
                 merge_dicts(p[1], {item[0]: item[1]})
         else:
-            p[1] = {p[2][0][0]: p[2][0][1]}
+            print("3")
+            print(p[2])
+            #p[1] = {p[2][0][0]: p[2][0][1]}
+            merge_dicts(p[1], {p[2][0][0]: p[2][0][1]})
         p[0] = p[1]
     else:
         if isinstance(p[1], tuple):
+            print("4")
             p[0] = {p[1][0]: p[1][1]}
         elif isinstance(p[1], list):
+            print("5")
+            print(p[1])
             p[0] = dict(p[1])
 
 def p_inline_table(p):
@@ -202,7 +214,7 @@ def p_keyvalue(p):
 def p_subtable(p):
     '''
     subtable : OBRACKET SUBTABLENAME CBRACKET NEWLINE
-             | OBRACKET SUBTABLENAME CBRACKET NEWLINE keyvalue_list
+             | OBRACKET SUBTABLENAME CBRACKET NEWLINE keyvalue_list 
     '''
     names = p[2].split(".")
     if len(p) == 5:
