@@ -93,19 +93,10 @@ lexer = lex.lex()
 
 
 inp2 = """
-# This is a TOML document
 
 title = "TOML Example"
 
-[owner]
-name = "Tom Preston-Werner"
-dob = 1979-05-27T07:32:00-08:00
-
-[database]
-enabled = true
-ports = [ 8000, 8001, 8002 ]
-data = [ ["delta", "phi"], [3.14] ]
-
+temp_targets = { cpu = 79.5, case = 72.0 }
 """
 
 lexer.input(inp2)
@@ -145,25 +136,19 @@ def p_toml(p):
     '''
     if len(p) == 3:
         if isinstance(p[1], dict) and isinstance(p[2], tuple):
-            print("1")
             merge_dicts(p[1], {p[2][0]: p[2][1]})
         elif isinstance(p[1], dict) and isinstance(p[2], list) and len(p[2]) == 2:
-            print("2")
             for item in p[2]:
                 merge_dicts(p[1], {item[0]: item[1]})
+        elif isinstance(p[1], dict) and isinstance(p[2], list) and len(p[2]) == 0:  # handle empty list
+            pass
         else:
-            print("3")
-            print(p[2])
-            #p[1] = {p[2][0][0]: p[2][0][1]}
             merge_dicts(p[1], {p[2][0][0]: p[2][0][1]})
         p[0] = p[1]
     else:
         if isinstance(p[1], tuple):
-            print("4")
             p[0] = {p[1][0]: p[1][1]}
         elif isinstance(p[1], list):
-            print("5")
-            print(p[1])
             p[0] = dict(p[1])
 
 def p_inline_table(p):
@@ -172,7 +157,26 @@ def p_inline_table(p):
                  | NEWLINE
     '''
     if len(p) == 5:
-        p[0] = [(p[1], p[3])]
+        parts = p[3].replace('{', '').replace('}', '').split(',')
+        d = {}
+
+        for part in parts:
+            key, value = [x.strip() for x in part.split('=')]
+
+            value = value.strip('"')
+
+            try:
+                value = int(value)
+            except ValueError:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+
+            d[key] = value
+
+        print(d)
+        p[0] = [(p[1], d)]
     else:
         p[0] = []
 
@@ -287,13 +291,6 @@ def p_error(p):
     print(f"Syntax error at line {p.lineno}, column {p.lexpos}")
 
 parser = yacc.yacc()
-parsed_dict = parser.parse(inp2, lexer=lexer, debug=True)
+parsed_dict = parser.parse(inp2, lexer=lexer) #, debug=True)
 json_str = json.dumps(parsed_dict)
 print(json_str)
-
-# try:
-#     parsed_dict = parser.parse(inp2, lexer=lexer)
-#     json_str = json.dumps(parsed_dict)
-# except ValueError as e:
-#     print(f"Error: {e}")
-#     json_str = "{}"
