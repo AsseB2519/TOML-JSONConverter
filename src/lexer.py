@@ -25,7 +25,8 @@ tokens = (
 )
 
 def t_COMMENT(t):
-    r'\#[^\n]*'
+    #r'\#[^\n]*'
+    r'\#[^\n]*\n*'
     pass
 
 t_FIRSTCLASSDATE = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2}'
@@ -92,6 +93,8 @@ lexer = lex.lex()
 
 
 inp2 = """
+# This is a TOML document
+
 title = "TOML Example"
 
 [owner]
@@ -102,6 +105,7 @@ dob = 1979-05-27T07:32:00-08:00
 enabled = true
 ports = [ 8000, 8001, 8002 ]
 data = [ ["delta", "phi"], [3.14] ]
+
 """
 
 lexer.input(inp2)
@@ -283,7 +287,7 @@ def p_error(p):
     print(f"Syntax error at line {p.lineno}, column {p.lexpos}")
 
 parser = yacc.yacc()
-parsed_dict = parser.parse(inp2, lexer=lexer) #, debug=True)
+parsed_dict = parser.parse(inp2, lexer=lexer, debug=True)
 json_str = json.dumps(parsed_dict)
 print(json_str)
 
