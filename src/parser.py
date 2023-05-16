@@ -42,8 +42,7 @@ def p_inline_table1(p):
     '''
     inline_table : KEY EQUALS INLINETABLE NEWLINE
     '''
-    d = p[3]
-    p[0] = (p[1], d)
+    p[0] = (p[1], p[3])
 
 def p_inline_table2(p):
     '''
@@ -84,15 +83,14 @@ def p_keyvalue(p):
     keyvalue : KEY EQUALS value
              | KEY EQUALS INLINETABLE
     '''
-    if p[2] == '=':
-        key_parts = p[1].split('.')
-        if len(key_parts) > 1:
-            nested_dict = p[3]
-            for part in reversed(key_parts):
-                nested_dict = {part: nested_dict}
-            p[0] = (key_parts[0], nested_dict[key_parts[0]])
-        else:
-            p[0] = (p[1], p[3])
+    key_parts = p[1].split('.')
+    if len(key_parts) > 1:
+        nested_dict = p[3]
+        for part in reversed(key_parts):
+            nested_dict = {part: nested_dict}
+        p[0] = (key_parts[0], nested_dict[key_parts[0]])
+    else:
+        p[0] = (p[1], p[3])
 
 def p_subtable1(p):
     '''
@@ -127,13 +125,15 @@ def p_subtable2(p):
 def p_subtable_list(p):
     '''
     subtable_list : subtable
-                  | subtable_list subtable
     '''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        merge_dicts(p[1], p[2])
-        p[0] = p[1]
+    p[0] = p[1]
+
+def p_subtable_list2(p):
+    '''
+    subtable_list : subtable_list subtable
+    '''
+    merge_dicts(p[1], p[2])
+    p[0] = p[1]
 
 def p_table1(p):
     '''
