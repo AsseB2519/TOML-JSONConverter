@@ -1,27 +1,33 @@
-# Processamento de Linguagens
+<p float="left">
+  <img src="/img1.png" width="100" />
+  <img src="/img2.png" width="100" /> 
+  <img src="/img3.png" width="100" />
+</p>
 
-### Grupo de Trabalho:
-- [Afonso Bessa](https://github.com/AsseB2519)
-- [Martim Ribeiro](https://github.com/sldx12)
-- [João Barroso](https://github.com/JoaoBarroso25)
+# Toml-Json Converter
 
+The objective of this project is to build a tool capable of converting a subset of the Toml language to the Json format. The Toml language is commonly used in configuration files and various other domains, allowing for the easy definition of complex structures analogously to JSON and YAML. Meanwhile, the Json format is widely used in web applications and REST services.
 
-## Conversor Toml-Json
-
-O objetivo deste projeto é construir uma ferramenta capaz de converter um subconjunto da linguagem Toml para o formato Json. A linguagem Toml é frequentemente usada em arquivos de configuração e em vários outros domínios, permitindo a fácil definição de estruturas complexas de modo análogo ao JSON e ao YAML. Enquanto isso, o formato Json é amplamente utilizado em aplicações web e serviços REST.
-
-Durante o desenvolvimento da ferramenta, será definido um subconjunto da linguagem Toml que será convertido para Json. Para realizar essa tarefa, serão utilizadas as seguintes bibliotecas:
+During the development of the tool, a subset of the Toml language will be defined, which will then be converted to Json. The following libraries will be used for this task:
 
   - Flex
 
   - Yacc
 
-Considere o seguinte exemplo em Toml:
-```
+Consider the following Toml example:
+
+<table>
+<tr>
+<th>TOML</th>
+<th>JSON</th>
+</tr>
+<tr>
+<td>
+  
+```toml
 title = "TOML Example"
 
 [owner]
-
 name = "Tom Preston-Werner"
 date = 2010-04-23
 time = 21:30:00
@@ -46,13 +52,13 @@ hosts = [
 "alpha",
 "omega"
 ]
-
-
 ```
+  
+</td>
+<td>
 
-Este será convertido para o seguinte formato Json:
+```json
 
-```
 {
    "title": "TOML Example",
    "owner": {
@@ -91,4 +97,20 @@ Este será convertido para o seguinte formato Json:
 }
 ```
 
+</td>
+</tr>
+</table>
+
+
+This will be converted to the following Json format:
+
+
+# Working Group
+### Members:
+- [Afonso Bessa](https://github.com/AsseB2519)
+- [Martim Ribeiro](https://github.com/sldx12)
+- [João Barroso](https://github.com/JoaoBarroso25)
+
+
 Para mais detalhes sobre a linguagem Toml, acesse https://github.com/toml-lang/toml.
+
