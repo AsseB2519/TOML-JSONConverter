@@ -4,7 +4,7 @@
 
 </div>
 
-In this project we built a tool capable of converting a subset of the **[TOML Language](https://github.com/toml-lang/toml)** to the JSON format. 
+In this project, we built a tool capable of converting a subset of the **[TOML Language](https://github.com/toml-lang/toml)** to the JSON format. 
 
 <h3>TOML:</h3>
 
