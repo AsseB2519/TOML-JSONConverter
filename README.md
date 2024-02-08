@@ -1,21 +1,22 @@
-<p float="left">
-  <img src="Photos/download.jpg" width="100" />
-  <img src="Photos/download.jpg" width="100" /> 
-  <img src="Photos/download.jpg" width="100" />
-</p>
-
+<div align="center">
+  
 # Toml-Json Converter
 
-The objective of this project is to build a tool capable of converting a subset of the Toml language to the Json format. The Toml language is commonly used in configuration files and various other domains, allowing for the easy definition of complex structures analogously to JSON and YAML. Meanwhile, the Json format is widely used in web applications and REST services.
+</div>
 
-During the development of the tool, a subset of the Toml language will be defined, which will then be converted to Json. The following libraries will be used for this task:
+In this project we built a tool capable of converting a subset of the **[TOML Language](https://github.com/toml-lang/toml)** to the JSON format. 
 
-  - Flex
+<h3>TOML:</h3>
 
-  - Yacc
+The **TOML Language** is commonly used in configuration files and various other domains, allowing for the easy definition of complex structures analogously to JSON and YAML. 
 
-Consider the following Toml example:
+<h3>JSON:</h3>
 
+Meanwhile, the JSON format is widely used in web applications and REST services because it offers a lightweight and easily readable way to structure data, making it a popular choice for exchanging information between servers and clients.
+
+<h3>Example:</h3>
+
+<div align="center">
 <table>
 <tr>
 <th>TOML</th>
@@ -100,17 +101,19 @@ hosts = [
 </td>
 </tr>
 </table>
+</div>
 
+<h3>Team Members:</h3>
+<p> 
+  
+  - <a href="https://github.com/AsseB2519">Afonso Bessa</a>
+  - <a href="https://github.com/arete12">Martim Ribeiro</a>
+  - <a href="https://github.com/JoaoBarroso25">Joao Barroso</a>
+</p>
 
-This will be converted to the following Json format:
-
-
-# Working Group
-### Members:
-- [Afonso Bessa](https://github.com/AsseB2519)
-- [Martim Ribeiro](https://github.com/sldx12)
-- [João Barroso](https://github.com/JoaoBarroso25)
-
-
-Para mais detalhes sobre a linguagem Toml, acesse https://github.com/toml-lang/toml.
+<div style="flex: 1;">
+  <h3>Evaluation:</h3>
+  <p><strong>Score:</strong> 15/20</p>
+  <p><strong>Tools:</strong> Python / Yacc / Flex </p>
+</div>
 
